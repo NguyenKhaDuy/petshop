@@ -24,6 +24,6 @@ public class CartItemEnity {
     private CartEntity cartEntity;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_product")
-    private ProductsEntity productsEntity;
+    @JoinColumn(name = "id_size_product")
+    private SizeProductEntity sizeProductEntity;
 }

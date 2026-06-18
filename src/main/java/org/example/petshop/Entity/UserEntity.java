@@ -38,8 +38,8 @@ public class UserEntity {
     @DateTimeFormat(pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime updatedAt;
 
-    @OneToOne(mappedBy = "userEntity")
-    @JoinColumn(name = "id_cart")
+    @OneToOne(mappedBy = "userEntity",  cascade = CascadeType.ALL,
+            orphanRemoval = true)
     private CartEntity cartEntity;
 
     @OneToMany(mappedBy = "userEntity", fetch = FetchType.LAZY, cascade = {CascadeType.ALL}, orphanRemoval = true)

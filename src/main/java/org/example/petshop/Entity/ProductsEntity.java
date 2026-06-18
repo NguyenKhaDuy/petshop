@@ -24,12 +24,6 @@ public class ProductsEntity {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "price")
-    private Double price;
-
-    @Column(name = "quantity")
-    private Integer quantity;
-
     @Column(name = "status")
     private String status;
 
@@ -49,14 +43,14 @@ public class ProductsEntity {
     private List<ProductImageEntity> productImageEntities = new ArrayList<>();
 
     @OneToMany(mappedBy = "productsEntity", fetch = FetchType.LAZY, cascade = {CascadeType.ALL}, orphanRemoval = true)
-    private List<CartItemEnity> cartItemEnities = new ArrayList<>();
-
-    @OneToMany(mappedBy = "productsEntity", fetch = FetchType.LAZY, cascade = {CascadeType.ALL}, orphanRemoval = true)
     private List<ReviewEntity> reviewEntities = new ArrayList<>();
 
     @OneToMany(mappedBy = "productsEntity", fetch = FetchType.LAZY, cascade = {CascadeType.ALL}, orphanRemoval = true)
     private List<WishListEntity> wishListEntities = new ArrayList<>();
 
     @OneToMany(mappedBy = "productsEntity", fetch = FetchType.LAZY, cascade = {CascadeType.ALL}, orphanRemoval = true)
-    private List<OrderDetailEntity> orderDetailEntities = new ArrayList<>();
+    private List<SizeProductEntity> sizeProductEntities = new ArrayList<>();
+
+    @OneToMany(mappedBy = "productsEntity", fetch = FetchType.LAZY, cascade = {CascadeType.ALL}, orphanRemoval = true)
+    private List<ImportProductEntity> importProductEntities = new ArrayList<>();
 }
