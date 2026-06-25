@@ -6,7 +6,7 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 
 public interface VoucherService {
-    DataResponse getAllVouchers();
+    DataResponse getAvailableVouchers();
     Page<VoucherDTO> getAllVouchers(Integer page);
     Object getVoucherById(Long idVoucher);
     MessageDTO addvoucher(VoucherRequest voucherRequest);

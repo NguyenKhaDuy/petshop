@@ -1,6 +1,5 @@
 package org.example.petshop.Service.Implement;
 
-import jakarta.persistence.criteria.Order;
 import org.example.petshop.DTO.*;
 import org.example.petshop.Entity.*;
 import org.example.petshop.Repository.*;
@@ -53,7 +52,9 @@ public class OrderServiceImpl implements OrderService {
             orderDTO.setIdUser(orderEntity.getUserEntity().getIdUser());
             orderDTO.setNameUser(orderEntity.getUserEntity().getName());
             orderDTO.setPaymentMethod(orderEntity.getPaymentMethodEntity().getMethod());
-            orderDTO.setVoucherCode(orderEntity.getVoucherEntity().getCode());
+            orderDTO.setVoucherCode(orderEntity.getVoucherEntity() != null
+                    ? orderEntity.getVoucherEntity().getCode()
+                    : null);
 
             InformationOrderDTO informationOrderDTO = new InformationOrderDTO();
             modelMapper.map(orderEntity.getInformationOrderEntity(), informationOrderDTO);
@@ -66,7 +67,9 @@ public class OrderServiceImpl implements OrderService {
                 orderDetailDTO.setPrice(orderDetailEntity.getSizeProductEntity().getPrice());
                 orderDetailDTO.setNameProduct(orderDetailEntity.getSizeProductEntity().getProductsEntity().getNameProduct());
                 orderDetailDTO.setIdProduct(orderDetailEntity.getSizeProductEntity().getProductsEntity().getIdProduct());
-                orderDetailDTO.setImageProduct(ConvertByteToBase64.toBase64(orderDetailEntity.getSizeProductEntity().getProductsEntity().getProductImageEntities().get(0).getImage()));
+                orderDetailDTO.setImageProduct(getFirstProductImage(
+                        orderDetailEntity.getSizeProductEntity().getProductsEntity()
+                ));
                 orderDetailDTO.setSize(orderDetailEntity.getSizeProductEntity().getSizeEntity().getSize());
                 orderDetailDTOS.add(orderDetailDTO);
             }
@@ -90,7 +93,9 @@ public class OrderServiceImpl implements OrderService {
                 orderDTO.setIdUser(orderEntity.getUserEntity().getIdUser());
                 orderDTO.setNameUser(orderEntity.getUserEntity().getName());
                 orderDTO.setPaymentMethod(orderEntity.getPaymentMethodEntity().getMethod());
-                orderDTO.setVoucherCode(orderEntity.getVoucherEntity().getCode());
+                orderDTO.setVoucherCode(orderEntity.getVoucherEntity() != null
+                        ? orderEntity.getVoucherEntity().getCode()
+                        : null);
 
                 InformationOrderDTO informationOrderDTO = new InformationOrderDTO();
                 modelMapper.map(orderEntity.getInformationOrderEntity(), informationOrderDTO);
@@ -103,7 +108,9 @@ public class OrderServiceImpl implements OrderService {
                     orderDetailDTO.setPrice(orderDetailEntity.getSizeProductEntity().getPrice());
                     orderDetailDTO.setNameProduct(orderDetailEntity.getSizeProductEntity().getProductsEntity().getNameProduct());
                     orderDetailDTO.setIdProduct(orderDetailEntity.getSizeProductEntity().getProductsEntity().getIdProduct());
-                    orderDetailDTO.setImageProduct(ConvertByteToBase64.toBase64(orderDetailEntity.getSizeProductEntity().getProductsEntity().getProductImageEntities().get(0).getImage()));
+                    orderDetailDTO.setImageProduct(getFirstProductImage(
+                            orderDetailEntity.getSizeProductEntity().getProductsEntity()
+                    ));
                     orderDetailDTO.setSize(orderDetailEntity.getSizeProductEntity().getSizeEntity().getSize());
                     orderDetailDTOS.add(orderDetailDTO);
                 }
@@ -143,12 +150,23 @@ public class OrderServiceImpl implements OrderService {
             messageDTO.setMessage("Payment method not found");
             return messageDTO;
         }
-        try{
-            voucherEntity = voucherRepository.findById(orderRequest.getIdVoucher()).get();
-        }catch (NoSuchElementException ex){
-            messageDTO.setStatus(HttpStatus.NOT_FOUND);
-            messageDTO.setMessage("Voucher not found");
-            return messageDTO;
+        if (orderRequest.getIdVoucher() != null) {
+            try{
+                voucherEntity = voucherRepository.findById(orderRequest.getIdVoucher()).get();
+            }catch (NoSuchElementException ex){
+                messageDTO.setStatus(HttpStatus.NOT_FOUND);
+                messageDTO.setMessage("Voucher not found");
+                return messageDTO;
+            }
+            boolean voucherAvailable = voucherEntity.getQuantity() != null
+                    && voucherEntity.getQuantity() > 0
+                    && voucherEntity.getExpiredDate() != null
+                    && !voucherEntity.getExpiredDate().isBefore(LocalDate.now());
+            if (!voucherAvailable) {
+                messageDTO.setStatus(HttpStatus.CONFLICT);
+                messageDTO.setMessage("Voucher has expired or is out of stock");
+                return messageDTO;
+            }
         }
         try{
             informationOrderEntity = informationOrderRepository.findById(orderRequest.getIdInformationOrder()).get();
@@ -165,6 +183,12 @@ public class OrderServiceImpl implements OrderService {
         orderEntity.setStatus("WAITING CONFIRMATION");
         orderEntity.setCreatedAt(LocalDateTime.now());
         orderEntity.setUpdatedAt(LocalDateTime.now());
+
+        if (orderRequest.getOrderItemRequests() == null || orderRequest.getOrderItemRequests().isEmpty()) {
+            messageDTO.setStatus(HttpStatus.BAD_REQUEST);
+            messageDTO.setMessage("Please select at least one product");
+            return messageDTO;
+        }
 
         List<OrderDetailEntity> orderDetailEntities = new ArrayList<>();
         for (OrderItemRequest orderItemRequest : orderRequest.getOrderItemRequests()){
@@ -183,7 +207,7 @@ public class OrderServiceImpl implements OrderService {
 
         orderEntity.setOrderDetailEntities(orderDetailEntities);
 
-        if (voucherEntity != null && LocalDate.now().isBefore(voucherEntity.getExpiredDate()) && voucherEntity.getQuantity() > 0){
+        if (voucherEntity != null){
             orderEntity.setVoucherEntity(voucherEntity);
             orderEntity.setTotalAmount(totalPrice - ((totalPrice * voucherEntity.getDiscount())/100));
 
@@ -229,7 +253,9 @@ public class OrderServiceImpl implements OrderService {
             orderDTO.setIdUser(orderEntity.getUserEntity().getIdUser());
             orderDTO.setNameUser(orderEntity.getUserEntity().getName());
             orderDTO.setPaymentMethod(orderEntity.getPaymentMethodEntity().getMethod());
-            orderDTO.setVoucherCode(orderEntity.getVoucherEntity().getCode());
+            orderDTO.setVoucherCode(orderEntity.getVoucherEntity() != null
+                    ? orderEntity.getVoucherEntity().getCode()
+                    : null);
 
             InformationOrderDTO informationOrderDTO = new InformationOrderDTO();
             modelMapper.map(orderEntity.getInformationOrderEntity(), informationOrderDTO);
@@ -242,7 +268,9 @@ public class OrderServiceImpl implements OrderService {
                 orderDetailDTO.setPrice(orderDetailEntity.getSizeProductEntity().getPrice());
                 orderDetailDTO.setNameProduct(orderDetailEntity.getSizeProductEntity().getProductsEntity().getNameProduct());
                 orderDetailDTO.setIdProduct(orderDetailEntity.getSizeProductEntity().getProductsEntity().getIdProduct());
-                orderDetailDTO.setImageProduct(ConvertByteToBase64.toBase64(orderDetailEntity.getSizeProductEntity().getProductsEntity().getProductImageEntities().get(0).getImage()));
+                orderDetailDTO.setImageProduct(getFirstProductImage(
+                        orderDetailEntity.getSizeProductEntity().getProductsEntity()
+                ));
                 orderDetailDTO.setSize(orderDetailEntity.getSizeProductEntity().getSizeEntity().getSize());
                 orderDetailDTOS.add(orderDetailDTO);
             }
@@ -272,5 +300,18 @@ public class OrderServiceImpl implements OrderService {
             messageDTO.setMessage("Order not found");
             return messageDTO;
         }
+    }
+
+    private String getFirstProductImage(ProductsEntity product) {
+        if (product == null
+                || product.getProductImageEntities() == null
+                || product.getProductImageEntities().isEmpty()
+                || product.getProductImageEntities().get(0) == null
+                || product.getProductImageEntities().get(0).getImage() == null) {
+            return null;
+        }
+        return ConvertByteToBase64.toBase64(
+                product.getProductImageEntities().get(0).getImage()
+        );
     }
 }

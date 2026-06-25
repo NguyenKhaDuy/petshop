@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="views">
+    <template id="view-cart">
+        <section class="page-heading">
+            <div><span class="eyebrow">Mua sắm</span><h1>Giỏ hàng của bạn</h1>
+                <p>Kiểm tra sản phẩm trước khi tạo đơn hàng.</p></div>
+            <a class="button button-ghost" href="#/products"><span data-icon="arrow-left"></span> Tiếp tục mua sắm</a>
+        </section>
+        <section class="split-layout cart-layout">
+            <div class="panel"><div class="panel-heading"><h2>Sản phẩm</h2><span data-role="cart-items-count">0 món</span></div>
+                <div data-role="cart-items"></div></div>
+            <aside class="summary-card" data-role="cart-summary"></aside>
+        </section>
+    </template>
+
+    <template id="view-wishlist">
+        <section class="page-heading">
+            <div><span class="eyebrow">Bộ sưu tập</span><h1>Sản phẩm yêu thích</h1>
+                <p>Những món đồ bạn muốn dành lại cho người bạn nhỏ.</p></div>
+            <a class="button button-primary" href="#/products"><span data-icon="plus"></span> Khám phá thêm</a>
+        </section>
+        <div class="product-grid" data-role="wishlist-grid"></div>
+    </template>
+
+    <template id="view-customer-orders">
+        <section class="page-heading">
+            <div><span class="eyebrow">Tài khoản</span><h1>Đơn hàng của tôi</h1>
+                <p>Theo dõi hành trình của từng đơn hàng.</p></div>
+        </section>
+        <section class="panel"><div class="panel-heading">
+            <div class="segmented-control" data-role="order-filter">
+                <button class="is-active" data-status="">Tất cả</button>
+                <button data-status="WAITING CONFIRMATION">Chờ xác nhận</button>
+                <button data-status="SHIPPING">Đang giao</button>
+                <button data-status="COMPLETED">Hoàn tất</button>
+                <button data-status="CANCELLED">Đã hủy</button>
+            </div></div>
+            <div class="order-card-list" data-role="customer-order-list"></div>
+        </section>
+    </template>
+
+    <template id="view-profile">
+        <section class="page-heading">
+            <div><span class="eyebrow">Tài khoản</span><h1>Hồ sơ cá nhân</h1>
+                <p>Thông tin tài khoản và địa chỉ nhận hàng.</p></div>
+        </section>
+        <section class="profile-grid">
+            <div class="panel profile-overview" data-role="profile-overview"></div>
+            <div class="panel">
+                <div class="panel-heading"><div><span class="eyebrow">Sổ địa chỉ</span><h2>Địa chỉ nhận hàng</h2></div>
+                    <button class="button button-primary button-small" data-action="add-address">
+                        <span data-icon="plus"></span> Thêm địa chỉ</button></div>
+                <div class="address-grid" data-role="address-list"></div>
+            </div>
+            <div class="panel security-panel">
+                <div class="panel-heading"><div><span class="eyebrow">Bảo mật</span><h2>Đổi mật khẩu</h2></div>
+                    <span class="security-icon" data-icon="shield-check"></span></div>
+                <form class="form-grid" data-role="password-form">
+                    <label class="form-field"><span>Mật khẩu hiện tại</span><input name="oldPassword"
+                        type="password" autocomplete="current-password" required></label>
+                    <label class="form-field"><span>Mật khẩu mới</span><input name="newPassword"
+                        type="password" autocomplete="new-password" minlength="6" required></label>
+                    <div class="form-span-2 form-actions"><button class="button button-primary" type="submit">
+                        Cập nhật mật khẩu</button></div>
+                </form>
+            </div>
+        </section>
+    </template>
+</th:block>
+</body>
+</html>

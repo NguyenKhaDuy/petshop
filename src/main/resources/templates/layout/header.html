@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<header class="topbar" th:fragment="header">
+    <button class="icon-button mobile-menu-button" id="mobile-menu-button" type="button"
+            aria-label="Mở menu" data-icon="menu"></button>
+
+    <a class="brand brand-mobile" href="#/home" aria-label="Petshop - Trang chủ">
+        <img class="brand-logo brand-logo-mobile" th:src="@{/images/logo-petshop.png}" alt="Petshop">
+    </a>
+
+    <div class="topbar-actions">
+        <a class="icon-button cart-shortcut" href="#/cart" aria-label="Giỏ hàng">
+            <span data-icon="shopping-bag"></span>
+            <span class="count-badge is-hidden" id="cart-count">0</span>
+        </a>
+        <a class="icon-button" href="#/wishlist" aria-label="Sản phẩm yêu thích">
+            <span data-icon="heart"></span>
+        </a>
+        <div id="header-account" class="header-account"></div>
+    </div>
+</header>
+</body>
+</html>

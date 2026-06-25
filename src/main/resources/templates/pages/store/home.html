@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="views">
+    <template id="view-home">
+        <section class="hero-section">
+            <div class="hero-copy">
+                <span class="hero-kicker"><span data-icon="sparkles"></span> Đồng hành cùng thú cưng</span>
+                <h1>Mọi điều tốt đẹp<br>cho người bạn nhỏ.</h1>
+                <p>Khám phá sản phẩm được chọn lọc cho sức khỏe, niềm vui và những ngày thật rộn ràng của thú cưng.</p>
+                <div class="hero-actions">
+                    <a class="button button-primary" href="#/products">
+                        Khám phá sản phẩm <span data-icon="arrow-right"></span>
+                    </a>
+                    <a class="button button-ghost" data-role="register-cta" href="#/register">Tạo tài khoản</a>
+                </div>
+                <div class="hero-trust">
+                    <span><i data-icon="shield-check"></i> Sản phẩm chọn lọc</span>
+                    <span><i data-icon="truck"></i> Đặt hàng thuận tiện</span>
+                </div>
+            </div>
+            <div class="hero-visual" aria-hidden="true">
+                <div class="hero-orbit orbit-one"></div>
+                <div class="hero-orbit orbit-two"></div>
+                <div class="hero-pet-card">
+                    <span class="hero-paw" data-icon="paw"></span>
+                    <div class="pet-face">
+                        <span class="ear ear-left"></span><span class="ear ear-right"></span>
+                        <span class="eye eye-left"></span><span class="eye eye-right"></span>
+                        <span class="nose"></span>
+                    </div>
+                    <strong>Happy pet, happy home.</strong>
+                    <span>Mỗi ngày thêm một niềm vui</span>
+                </div>
+                <div class="floating-chip chip-rating"><b>4.9</b><span>★ đánh giá</span></div>
+                <div class="floating-chip chip-care"><i data-icon="heart"></i><span>Chăm sóc tận tâm</span></div>
+            </div>
+        </section>
+
+        <section class="content-section category-section">
+            <div class="section-heading">
+                <div><span class="eyebrow">Danh mục</span><h2>Chọn theo nhu cầu</h2></div>
+                <a href="#/products" class="text-link">Xem tất cả <span data-icon="arrow-right"></span></a>
+            </div>
+            <div class="category-grid" data-role="home-categories"></div>
+        </section>
+
+        <section class="content-section">
+            <div class="section-heading">
+                <div><span class="eyebrow">Nổi bật</span><h2>Sản phẩm dành cho bạn</h2></div>
+                <a href="#/products" class="text-link">Mở cửa hàng <span data-icon="arrow-right"></span></a>
+            </div>
+            <div class="product-grid" data-role="featured-products"></div>
+        </section>
+
+        <section class="care-banner">
+            <div class="care-banner-icon" data-icon="stethoscope"></div>
+            <div><span class="eyebrow">Góc nhỏ Petshop</span><h2>Hiểu đúng để chăm tốt hơn</h2>
+                <p>Chọn kích cỡ phù hợp, theo dõi khẩu phần và luôn để ý phản ứng của thú cưng với sản phẩm mới.</p></div>
+            <a class="button button-light" href="#/products">Bắt đầu chọn đồ</a>
+        </section>
+    </template>
+
+    <template id="view-products">
+        <section class="page-heading">
+            <div><span class="eyebrow">Cửa hàng</span><h1>Sản phẩm cho thú cưng</h1>
+                <p>Tìm nhanh theo tên, danh mục hoặc tình trạng còn hàng.</p></div>
+            <div class="heading-stat"><strong data-role="product-count">0</strong><span>sản phẩm</span></div>
+        </section>
+        <section class="filter-bar">
+            <label class="search-field"><span data-icon="search"></span>
+                <input type="search" data-role="product-search" placeholder="Tìm theo tên sản phẩm..."></label>
+            <label class="select-field"><span data-icon="layers"></span>
+                <select data-role="category-filter"><option value="">Tất cả danh mục</option></select></label>
+            <label class="select-field"><span data-icon="arrow-up-down"></span>
+                <select data-role="product-sort">
+                    <option value="newest">Mới cập nhật</option><option value="name-asc">Tên A–Z</option>
+                    <option value="price-asc">Giá thấp đến cao</option><option value="price-desc">Giá cao đến thấp</option>
+                </select></label>
+        </section>
+        <div class="product-grid" data-role="product-grid"></div>
+    </template>
+
+    <template id="view-product-detail">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="#/home">Trang chủ</a><span data-icon="chevron-right"></span>
+            <a href="#/products">Sản phẩm</a><span data-icon="chevron-right"></span>
+            <span data-role="breadcrumb-name">Chi tiết</span>
+        </nav>
+        <section class="product-detail" data-role="product-detail"></section>
+        <section class="content-section detail-reviews">
+            <div class="section-heading"><div><span class="eyebrow">Cộng đồng</span><h2>Đánh giá sản phẩm</h2></div></div>
+            <div class="review-list" data-role="review-list"></div>
+        </section>
+    </template>
+</th:block>
+</body>
+</html>

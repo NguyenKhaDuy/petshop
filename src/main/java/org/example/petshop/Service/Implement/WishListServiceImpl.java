@@ -10,16 +10,16 @@ import org.example.petshop.Repository.ProductRepository;
 import org.example.petshop.Repository.UserRepository;
 import org.example.petshop.Repository.WishListRepository;
 import org.example.petshop.Service.WishListService;
-import org.example.petshop.Utils.ConvertByteToBase64;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 @Service
 public class WishListServiceImpl implements WishListService {
@@ -27,8 +27,6 @@ public class WishListServiceImpl implements WishListService {
     WishListRepository wishListRepository;
     @Autowired
     UserRepository userRepository;
-    @Autowired
-    ModelMapper modelMapper;
     @Autowired
     ProductRepository productRepository;
 
@@ -40,12 +38,24 @@ public class WishListServiceImpl implements WishListService {
             UserEntity userEntity = userRepository.findById(idUser).get();
             List<WishListEntity> wishListEntities = wishListRepository.findByUserEntity(userEntity);
             List<WishListDTO> wishListDTOS = new ArrayList<>();
+            Set<Long> addedProductIds = new HashSet<>();
             for (WishListEntity wishListEntity : wishListEntities) {
+                Long productId = wishListEntity.getProductsEntity().getIdProduct();
+                if (!addedProductIds.add(productId)) {
+                    continue;
+                }
                 WishListDTO wishListDTO = new WishListDTO();
-                modelMapper.map(wishListEntity, wishListDTO);
-                wishListDTO.setIdProduct(wishListEntity.getProductsEntity().getIdProduct());
+                wishListDTO.setIdWishlist(wishListEntity.getIdWishlist());
+                wishListDTO.setCreatedAt(wishListEntity.getCreatedAt());
+                wishListDTO.setIdProduct(productId);
                 wishListDTO.setProductName(wishListEntity.getProductsEntity().getNameProduct());
-                wishListDTO.setImageProduct(ConvertByteToBase64.toBase64(wishListEntity.getProductsEntity().getProductImageEntities().get(0).getImage()));
+                if (!wishListEntity.getProductsEntity().getProductImageEntities().isEmpty()) {
+                    wishListDTO.setImageProduct(
+                            java.util.Base64.getEncoder().encodeToString(
+                                    wishListEntity.getProductsEntity().getProductImageEntities().get(0).getImage()
+                            )
+                    );
+                }
                 wishListDTOS.add(wishListDTO);
             }
             dataResponse.setMessage("Successfully retrieved wish list");
@@ -78,6 +88,13 @@ public class WishListServiceImpl implements WishListService {
             messageDTO.setMessage("Can not found product");
             return messageDTO;
         }
+        List<WishListEntity> existingWishLists = wishListRepository
+                .findByUserEntityAndProductsEntity(userEntity, productsEntity);
+        if (!existingWishLists.isEmpty()) {
+            messageDTO.setStatus(HttpStatus.OK);
+            messageDTO.setMessage("Product already in wish list");
+            return messageDTO;
+        }
         WishListEntity wishListEntity = new WishListEntity();
         wishListEntity.setProductsEntity(productsEntity);
         wishListEntity.setUserEntity(userEntity);
@@ -93,7 +110,12 @@ public class WishListServiceImpl implements WishListService {
         MessageDTO messageDTO = new MessageDTO();
         try {
             WishListEntity wishListEntity = wishListRepository.findById(idWishList).get();
-            wishListRepository.delete(wishListEntity);
+            List<WishListEntity> duplicatedWishLists = wishListRepository
+                    .findByUserEntityAndProductsEntity(
+                            wishListEntity.getUserEntity(),
+                            wishListEntity.getProductsEntity()
+                    );
+            wishListRepository.deleteAll(duplicatedWishLists);
             messageDTO.setStatus(HttpStatus.OK);
             messageDTO.setMessage("Successfully deleted wish list");
             return messageDTO;

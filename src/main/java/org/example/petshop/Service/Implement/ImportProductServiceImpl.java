@@ -163,6 +163,11 @@ public class ImportProductServiceImpl implements ImportProductService {
         }
         try {
             ImportProductEntity importProductEntity = importProductRepository.findByProductsEntityAndSizeEntity(productsEntity, sizeEntity);
+            if (importProductEntity == null) {
+                messageDTO.setStatus(HttpStatus.NOT_FOUND);
+                messageDTO.setMessage("Import Product Not Found");
+                return messageDTO;
+            }
             importProductEntity.setSizeEntity(sizeEntity);
             importProductEntity.setImportPrice(importProductRequest.getImportPrice());
             importProductEntity.setQuantity(importProductRequest.getQuantity());

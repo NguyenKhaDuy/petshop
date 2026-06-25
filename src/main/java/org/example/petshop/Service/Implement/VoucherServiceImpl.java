@@ -1,9 +1,6 @@
 package org.example.petshop.Service.Implement;
 
 import org.example.petshop.DTO.*;
-import org.example.petshop.Entity.CategoryEntity;
-import org.example.petshop.Entity.InformationOrderEntity;
-import org.example.petshop.Entity.UserEntity;
 import org.example.petshop.Entity.VoucherEntity;
 import org.example.petshop.Repository.VoucherRepository;
 import org.example.petshop.Service.VoucherService;
@@ -16,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,11 +28,18 @@ public class VoucherServiceImpl implements VoucherService {
 
 
     @Override
-    public DataResponse getAllVouchers() {
+    public DataResponse getAvailableVouchers() {
         DataResponse dataResponse = new DataResponse();
         List<VoucherEntity> voucherEntities = voucherRepository.findAll();
         List<VoucherDTO> voucherDTOS = new ArrayList<>();
         for (VoucherEntity voucherEntity : voucherEntities) {
+            boolean available = voucherEntity.getQuantity() != null
+                    && voucherEntity.getQuantity() > 0
+                    && voucherEntity.getExpiredDate() != null
+                    && !voucherEntity.getExpiredDate().isBefore(LocalDate.now());
+            if (!available) {
+                continue;
+            }
             VoucherDTO voucherDTO = new VoucherDTO();
             modelMapper.map(voucherEntity, voucherDTO);
             voucherDTOS.add(voucherDTO);
@@ -95,6 +100,7 @@ public class VoucherServiceImpl implements VoucherService {
         try {
             VoucherEntity voucherEntity = voucherRepository.findById(voucherRequest.getIdVoucher()).get();
             modelMapper.map(voucherRequest, voucherEntity);
+            voucherRepository.save(voucherEntity);
             messageDTO.setStatus(HttpStatus.OK);
             messageDTO.setMessage("Success");
             return messageDTO;

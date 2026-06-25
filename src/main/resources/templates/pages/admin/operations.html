@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="views">
+    <template id="view-admin-imports">
+        <section class="page-heading"><div><span class="eyebrow">Kho hàng</span><h1>Lịch sử nhập kho</h1>
+            <p>Theo dõi giá nhập, số lượng và kích cỡ từng lần nhập.</p></div>
+            <button class="button button-primary" data-action="add-import"><span data-icon="plus"></span> Tạo phiếu nhập</button></section>
+        <section class="panel data-panel">
+            <div class="table-toolbar"><label class="search-field"><span data-icon="search"></span>
+                <input data-role="import-search" type="search" placeholder="Tìm theo sản phẩm..."></label>
+                <div class="toolbar-meta" data-role="import-meta"></div></div>
+            <div class="table-wrap"><table class="data-table"><thead><tr><th>Mã phiếu</th><th>Sản phẩm</th>
+                <th>Kích cỡ</th><th>Giá nhập</th><th>Số lượng</th><th>Ngày nhập</th>
+                <th class="align-right">Thao tác</th></tr></thead><tbody data-role="import-table"></tbody></table></div>
+            <div class="pagination" data-role="import-pagination"></div>
+        </section>
+    </template>
+
+    <template id="view-admin-orders">
+        <section class="page-heading"><div><span class="eyebrow">Bán hàng</span><h1>Quản lý đơn hàng</h1>
+            <p>Kiểm tra chi tiết và cập nhật tiến độ xử lý.</p></div></section>
+        <section class="panel data-panel">
+            <div class="table-toolbar"><label class="search-field"><span data-icon="search"></span>
+                <input data-role="admin-order-search" type="search" placeholder="Mã đơn hoặc khách hàng..."></label>
+                <label class="select-field"><span data-icon="filter"></span><select data-role="admin-order-status">
+                    <option value="">Tất cả trạng thái</option><option value="WAITING CONFIRMATION">Chờ xác nhận</option>
+                    <option value="CONFIRMED">Đã xác nhận</option><option value="SHIPPING">Đang giao</option>
+                    <option value="COMPLETED">Hoàn tất</option><option value="CANCELLED">Đã hủy</option>
+                </select></label><div class="toolbar-meta" data-role="admin-order-meta"></div></div>
+            <div class="table-wrap"><table class="data-table"><thead><tr><th>Đơn hàng</th><th>Khách hàng</th>
+                <th>Ngày đặt</th><th>Tổng tiền</th><th>Thanh toán</th><th>Trạng thái</th>
+                <th class="align-right">Thao tác</th></tr></thead><tbody data-role="admin-order-table"></tbody></table></div>
+            <div class="pagination" data-role="admin-order-pagination"></div>
+        </section>
+    </template>
+
+    <template id="view-admin-users">
+        <section class="page-heading"><div><span class="eyebrow">Khách hàng</span><h1>Danh sách tài khoản</h1>
+            <p>Xem thông tin cơ bản và sổ địa chỉ của người dùng.</p></div></section>
+        <section class="panel data-panel">
+            <div class="table-toolbar"><label class="search-field"><span data-icon="search"></span>
+                <input data-role="user-search" type="search" placeholder="Tìm tên hoặc email..."></label>
+                <div class="toolbar-meta" data-role="user-meta"></div></div>
+            <div class="table-wrap"><table class="data-table"><thead><tr><th>Người dùng</th><th>Vai trò</th>
+                <th>Địa chỉ</th><th>Ngày tham gia</th><th>Cập nhật</th><th class="align-right">Thao tác</th></tr></thead>
+                <tbody data-role="user-table"></tbody></table></div>
+            <div class="pagination" data-role="user-pagination"></div>
+        </section>
+    </template>
+</th:block>
+</body>
+</html>

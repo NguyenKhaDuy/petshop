@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Có lỗi xảy ra | Petshop')}"></head>
+<body class="error-page">
+<main class="error-card">
+    <div class="error-illustration danger"><span data-icon="triangle-alert"></span><strong>500</strong></div>
+    <span class="eyebrow">Petshop gặp chút trục trặc</span>
+    <h1>Chưa thể xử lý yêu cầu.</h1>
+    <p>Vui lòng thử lại sau ít phút. Dữ liệu của bạn vẫn được giữ nguyên.</p>
+    <a class="button button-primary" th:href="@{/}">Quay lại ứng dụng</a>
+</main>
+<script type="module" th:src="@{/js/error.js}"></script>
+</body>
+</html>
