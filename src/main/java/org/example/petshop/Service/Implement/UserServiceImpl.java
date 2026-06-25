@@ -1,6 +1,7 @@
 package org.example.petshop.Service.Implement;
 
 import org.example.petshop.DTO.*;
+import org.example.petshop.Entity.CartEntity;
 import org.example.petshop.Entity.InformationOrderEntity;
 import org.example.petshop.Entity.UserEntity;
 import org.example.petshop.Repository.InformationOrderRepository;
@@ -31,7 +32,6 @@ public class UserServiceImpl implements UserService {
     PasswordEncoder passwordEncoder;
     @Autowired
     InformationOrderRepository informationOrderRepository;
-
     @Override
     public MessageDTO register(RegisterDTO registerDTO) {
         UserEntity userEntity = userRepository.findByEmail(registerDTO.getEmail());
@@ -39,7 +39,8 @@ public class UserServiceImpl implements UserService {
         List<InformationOrderEntity> informationOrderEntities = new ArrayList<>();
         if (userEntity != null) {
             messageDTO.setMessage("User already exists");
-            messageDTO.setStatus(HttpStatus.BAD_GATEWAY);
+            messageDTO.setStatus(HttpStatus.CONFLICT);
+            return messageDTO;
         }
         UserEntity user = new UserEntity();
         modelMapper.map(registerDTO, user);
@@ -51,9 +52,16 @@ public class UserServiceImpl implements UserService {
         informationOrderEntity.setUserEntity(user);
         informationOrderEntities.add(informationOrderEntity);
         user.setInformationOrderEntities(informationOrderEntities);
-        user.setRole("CUSTOMER");
+        user.setRole("USER");
         user.setUpdatedAt(LocalDateTime.now());
         user.setCreatedAt(LocalDateTime.now());
+
+        CartEntity cartEntity = new CartEntity();
+        cartEntity.setUserEntity(user);
+        cartEntity.setCreatedAt(LocalDateTime.now());
+        cartEntity.setUpdatedAt(LocalDateTime.now());
+        user.setCartEntity(cartEntity);
+
         userRepository.save(user);
         messageDTO.setStatus(HttpStatus.OK);
         messageDTO.setMessage("User registered successfully");
@@ -70,6 +78,10 @@ public class UserServiceImpl implements UserService {
             return messageDTO;
         }
         if (passwordEncoder.matches(password, userEntity.getPassword())) {
+            if ("CUSTOMER".equalsIgnoreCase(userEntity.getRole())) {
+                userEntity.setRole("USER");
+                userRepository.save(userEntity);
+            }
             LoginDTO loginDTO = new LoginDTO();
             loginDTO.setEmail(userEntity.getEmail());
             loginDTO.setIdUser(userEntity.getIdUser());

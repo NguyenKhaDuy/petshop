@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"
+     th:fragment="toasts"></div>
+
+<div class="modal-backdrop" id="app-modal" aria-hidden="true" th:fragment="modal">
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <header class="modal-header">
+            <div>
+                <span class="eyebrow" id="modal-eyebrow">Petshop</span>
+                <h2 id="modal-title">Thông tin</h2>
+            </div>
+            <button class="icon-button" id="modal-close" type="button" aria-label="Đóng"
+                    data-icon="x"></button>
+        </header>
+        <div class="modal-body" id="modal-body"></div>
+    </section>
+</div>
+</body>
+</html>

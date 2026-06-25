@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside class="sidebar" id="sidebar" th:fragment="sidebar">
+    <a class="brand" href="#/home" aria-label="Petshop - Trang chủ">
+        <img class="brand-logo brand-logo-sidebar" th:src="@{/images/logo-petshop.png}" alt="Petshop">
+    </a>
+
+    <nav class="sidebar-nav" id="sidebar-nav" aria-label="Điều hướng chính"></nav>
+
+    <div class="sidebar-user" id="sidebar-user"></div>
+</aside>
+<div class="sidebar-backdrop" id="sidebar-backdrop" th:fragment="backdrop"></div>
+</body>
+</html>

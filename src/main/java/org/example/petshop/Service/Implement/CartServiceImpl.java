@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -30,6 +31,19 @@ public class CartServiceImpl implements CartService {
     @Autowired
     CartItemRepository cartItemRepository;
 
+    private CartEntity getOrCreateCart(UserEntity userEntity) {
+        CartEntity cartEntity = cartRepository.findByUserEntity(userEntity);
+        if (cartEntity != null) {
+            return cartEntity;
+        }
+
+        CartEntity newCart = new CartEntity();
+        newCart.setUserEntity(userEntity);
+        newCart.setCreatedAt(LocalDateTime.now());
+        newCart.setUpdatedAt(LocalDateTime.now());
+        userEntity.setCartEntity(newCart);
+        return cartRepository.save(newCart);
+    }
 
     @Override
     public Object getCartByUser(Long idUser) {
@@ -45,7 +59,7 @@ public class CartServiceImpl implements CartService {
             return messageDTO;
         }
         try{
-            cartEntity = cartRepository.findByUserEntity(userEntity);
+            cartEntity = getOrCreateCart(userEntity);
             CartDTO cartDTO = new CartDTO();
             modelMapper.map(cartEntity, cartDTO);
             List<CartItemDTO> cartItemDTOS = new ArrayList<>();
@@ -101,14 +115,20 @@ public class CartServiceImpl implements CartService {
             return messageDTO;
         }
         try{
-            cartEntity = cartRepository.findByUserEntity(userEntity);
+            cartEntity = getOrCreateCart(userEntity);
             CartItemEnity cartItemEnity = new CartItemEnity();
             SizeProductEntity sizeProductEntity = sizeProductRepository.findBySizeEntityAndProductsEntity(sizeEntity, productsEntity);
+            if (sizeProductEntity == null) {
+                messageDTO.setMessage("Can not find product size");
+                messageDTO.setStatus(HttpStatus.NOT_FOUND);
+                return messageDTO;
+            }
             cartItemEnity.setSizeProductEntity(sizeProductEntity);
             cartItemEnity.setCartEntity(cartEntity);
             cartItemEnity.setTotalPrice(addProductToCart.getQuantity() * sizeProductEntity.getPrice());
             cartItemEnity.setQuantity(addProductToCart.getQuantity());
             cartEntity.getCartItemEnities().add(cartItemEnity);
+            cartEntity.setUpdatedAt(LocalDateTime.now());
             cartRepository.save(cartEntity);
             messageDTO.setMessage("Success");
             messageDTO.setStatus(HttpStatus.OK);

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="views">
+    <template id="view-admin-dashboard">
+        <section class="page-heading admin-heading">
+            <div><span class="eyebrow">Trung tâm vận hành</span><h1>Tổng quan cửa hàng</h1>
+                <p data-role="admin-greeting">Theo dõi nhanh dữ liệu đang hoạt động.</p></div>
+            <div class="date-chip"><span data-icon="calendar"></span><span data-role="current-date"></span></div>
+        </section>
+        <section class="stats-grid" data-role="admin-stats"></section>
+        <section class="dashboard-grid">
+            <div class="panel dashboard-orders">
+                <div class="panel-heading"><div><span class="eyebrow">Mới nhất</span><h2>Đơn hàng gần đây</h2></div>
+                    <a class="text-link" href="#/admin/orders">Xem tất cả <span data-icon="arrow-right"></span></a></div>
+                <div class="table-wrap"><table><thead><tr><th>Mã đơn</th><th>Khách hàng</th>
+                    <th>Tổng tiền</th><th>Trạng thái</th></tr></thead><tbody data-role="recent-orders"></tbody></table></div>
+            </div>
+            <div class="panel dashboard-stock">
+                <div class="panel-heading"><div><span class="eyebrow">Tồn kho</span><h2>Cần chú ý</h2></div>
+                    <a class="text-link" href="#/admin/products">Quản lý</a></div>
+                <div class="stock-list" data-role="low-stock-list"></div>
+            </div>
+        </section>
+        <section class="quick-actions">
+            <div><span class="eyebrow">Thao tác nhanh</span><h2>Bạn muốn làm gì?</h2></div>
+            <div class="quick-action-list">
+                <button data-quick-action="product"><i data-icon="package-plus"></i><span>Thêm sản phẩm</span></button>
+                <button data-quick-action="import"><i data-icon="warehouse"></i><span>Nhập kho</span></button>
+                <button data-quick-action="voucher"><i data-icon="ticket"></i><span>Tạo voucher</span></button>
+            </div>
+        </section>
+    </template>
+</th:block>
+</body>
+</html>

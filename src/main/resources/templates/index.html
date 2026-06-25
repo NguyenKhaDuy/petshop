@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Petshop')}"></head>
+<body>
+<a class="skip-link" href="#page-content">Đi đến nội dung chính</a>
+<div class="app-shell">
+    <aside th:replace="~{layout/sidebar :: sidebar}"></aside>
+    <div th:replace="~{layout/sidebar :: backdrop}"></div>
+    <div class="app-column">
+        <header th:replace="~{layout/header :: header}"></header>
+        <main class="page-content" id="page-content" tabindex="-1">
+            <div class="route-loading" id="route-loading">
+                <span class="spinner"></span><span>Đang chuẩn bị không gian Petshop...</span>
+            </div>
+            <div id="app-view"></div>
+        </main>
+        <footer th:replace="~{layout/footer :: footer}"></footer>
+    </div>
+</div>
+
+<div th:replace="~{layout/alerts :: toasts}"></div>
+<div th:replace="~{layout/alerts :: modal}"></div>
+
+<div class="template-registry" aria-hidden="true">
+    <th:block th:replace="~{pages/store/home :: views}"></th:block>
+    <th:block th:replace="~{pages/auth/auth :: views}"></th:block>
+    <th:block th:replace="~{pages/customer/account :: views}"></th:block>
+    <th:block th:replace="~{pages/admin/dashboard :: views}"></th:block>
+    <th:block th:replace="~{pages/admin/products :: views}"></th:block>
+    <th:block th:replace="~{pages/admin/catalog :: views}"></th:block>
+    <th:block th:replace="~{pages/admin/operations :: views}"></th:block>
+</div>
+
+<script type="module" th:src="@{/js/app.js}"></script>
+</body>
+</html>

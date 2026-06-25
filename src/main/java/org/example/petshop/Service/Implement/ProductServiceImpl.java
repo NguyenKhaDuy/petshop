@@ -391,7 +391,7 @@ public class ProductServiceImpl implements ProductService {
         ProductsEntity productsEntity = null;
         SizeEntity sizeEntity = null;
         try{
-            sizeEntity = sizeRepository.findById(sizeProductRequest.getIdSizeProduct()).get();
+            sizeEntity = sizeRepository.findById(sizeProductRequest.getIdSize()).get();
         }catch (NoSuchElementException ex){
             messageDTO.setStatus(HttpStatus.NOT_FOUND);
             messageDTO.setMessage("Size not found");
@@ -421,7 +421,7 @@ public class ProductServiceImpl implements ProductService {
         ProductsEntity productsEntity = null;
         SizeEntity sizeEntity = null;
         try{
-            sizeEntity = sizeRepository.findById(sizeProductRequest.getIdSizeProduct()).get();
+            sizeEntity = sizeRepository.findById(sizeProductRequest.getIdSize()).get();
         }catch (NoSuchElementException ex){
             messageDTO.setStatus(HttpStatus.NOT_FOUND);
             messageDTO.setMessage("Size not found");

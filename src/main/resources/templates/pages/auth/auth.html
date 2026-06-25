@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="views">
+    <template id="view-login">
+        <section class="auth-shell">
+            <div class="auth-aside">
+                <img class="auth-brand-logo" src="/images/logo-petshop.png" alt="Petshop">
+                <span class="eyebrow">Chào mừng trở lại</span>
+                <h1>Tiếp tục chăm sóc những điều bạn yêu.</h1>
+                <p>Đăng nhập để quản lý giỏ hàng, sản phẩm yêu thích và theo dõi đơn hàng.</p>
+                <div class="auth-quote"><span data-icon="quote"></span>
+                    <p>“Một ngôi nhà có thú cưng luôn có thêm một nhịp tim.”</p></div>
+            </div>
+            <div class="auth-card">
+                <div class="auth-heading"><span class="eyebrow">Tài khoản Petshop</span><h2>Đăng nhập</h2>
+                    <p>Nhập email và mật khẩu của bạn.</p></div>
+                <form data-role="login-form" class="form-stack">
+                    <label class="form-field"><span>Email</span>
+                        <div class="input-with-icon"><i data-icon="mail"></i><input name="email" type="email"
+                            autocomplete="email" placeholder="ban@example.com" required></div></label>
+                    <label class="form-field"><span>Mật khẩu</span>
+                        <div class="input-with-icon"><i data-icon="lock"></i><input name="password" type="password"
+                            autocomplete="current-password" placeholder="Nhập mật khẩu" minlength="6" required>
+                            <button class="password-toggle" type="button" data-toggle-password aria-label="Hiện mật khẩu"
+                                    data-icon="eye"></button></div></label>
+                    <button class="button button-primary button-block" type="submit">
+                        <span data-submit-label>Đăng nhập</span><span data-icon="arrow-right"></span></button>
+                </form>
+                <p class="auth-switch">Chưa có tài khoản? <a href="#/register">Đăng ký ngay</a></p>
+            </div>
+        </section>
+    </template>
+
+    <template id="view-register">
+        <section class="auth-shell register-shell">
+            <div class="auth-aside">
+                <img class="auth-brand-logo" src="/images/logo-petshop.png" alt="Petshop">
+                <span class="eyebrow">Gia nhập Petshop</span>
+                <h1>Bắt đầu hành trình chăm sóc thật vui.</h1>
+                <p>Một tài khoản gọn gàng cho giỏ hàng, địa chỉ nhận hàng và lịch sử mua sắm.</p>
+                <ul class="feature-list">
+                    <li><i data-icon="check-circle"></i> Lưu địa chỉ giao hàng</li>
+                    <li><i data-icon="check-circle"></i> Theo dõi trạng thái đơn</li>
+                    <li><i data-icon="check-circle"></i> Lưu sản phẩm yêu thích</li>
+                </ul>
+            </div>
+            <div class="auth-card wide">
+                <div class="auth-heading"><span class="eyebrow">Tạo tài khoản</span><h2>Đăng ký</h2>
+                    <p>Điền thông tin để bắt đầu.</p></div>
+                <form data-role="register-form" class="form-grid">
+                    <label class="form-field"><span>Họ và tên</span><input name="name" type="text"
+                        autocomplete="name" placeholder="Nguyễn Minh Anh" minlength="2" required></label>
+                    <label class="form-field"><span>Email</span><input name="email" type="email"
+                        autocomplete="email" placeholder="ban@example.com" required></label>
+                    <label class="form-field form-span-2"><span>Mật khẩu</span><input name="password" type="password"
+                        autocomplete="new-password" placeholder="Tối thiểu 6 ký tự" minlength="6" required></label>
+                    <label class="form-field"><span>Số điện thoại</span><input name="phoneOrder" type="tel"
+                        autocomplete="tel" placeholder="09xx xxx xxx" pattern="[0-9+ ]{9,15}" required></label>
+                    <label class="form-field"><span>Địa chỉ nhận hàng</span><input name="addressOrder" type="text"
+                        autocomplete="street-address" placeholder="Số nhà, đường, quận/huyện..." required></label>
+                    <label class="checkbox-field form-span-2"><input type="checkbox" required>
+                        <span>Tôi xác nhận thông tin trên là chính xác.</span></label>
+                    <button class="button button-primary button-block form-span-2" type="submit">
+                        <span data-submit-label>Tạo tài khoản</span><span data-icon="arrow-right"></span></button>
+                </form>
+                <p class="auth-switch">Đã có tài khoản? <a href="#/login">Đăng nhập</a></p>
+            </div>
+        </section>
+    </template>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Lỗi | Petshop')}"></head>
+<body class="error-page">
+<main class="error-card">
+    <div class="error-illustration danger"><strong th:text="${status ?: '!' }">!</strong></div>
+    <span class="eyebrow">Không thể hoàn thành</span>
+    <h1 th:text="${error ?: 'Đã có lỗi xảy ra'}">Đã có lỗi xảy ra</h1>
+    <p th:text="${message ?: 'Vui lòng thử lại hoặc quay về trang chủ.'}">Vui lòng thử lại.</p>
+    <a class="button button-primary" th:href="@{/}">Về trang chủ</a>
+</main>
+</body>
+</html>

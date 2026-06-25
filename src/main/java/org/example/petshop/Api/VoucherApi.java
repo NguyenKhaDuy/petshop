@@ -26,7 +26,7 @@ public class VoucherApi {
 
     @GetMapping(value = "/api/voucher")
     public ResponseEntity<Object> getVouchers() {
-        DataResponse dataResponse = voucherService.getAllVouchers();
+        DataResponse dataResponse = voucherService.getAvailableVouchers();
         return new ResponseEntity<>(dataResponse, HttpStatus.OK);
     }
 

@@ -62,7 +62,7 @@ public class SizeServiceImpl implements SizeService {
     public MessageDTO addSize(SizeDTO sizeDTO) {
         MessageDTO messageDTO = new MessageDTO();
         SizeEntity sizeEntity = new SizeEntity();
-        modelMapper.map(sizeEntity, sizeDTO);
+        modelMapper.map(sizeDTO, sizeEntity);
         sizeRepository.save(sizeEntity);
         messageDTO.setStatus(HttpStatus.OK);
         messageDTO.setMessage("Success");
