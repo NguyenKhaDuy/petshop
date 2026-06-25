@@ -22,8 +22,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -310,25 +312,13 @@ public class ProductServiceImpl implements ProductService {
             return messageDTO;
         }
         ProductsEntity productsEntity = new ProductsEntity();
-        modelMapper.map(productRequest, productsEntity);
+        productsEntity.setNameProduct(productRequest.getNameProduct());
+        productsEntity.setDescription(productRequest.getDescription());
         productsEntity.setCategoryEntity(categoryEntity);
         productsEntity.setCreatedAt(LocalDateTime.now());
         productsEntity.setUpdatedAt(LocalDateTime.now());
         productsEntity.setStatus("ACTIVE");
-        if (productRequest.getImages() != null) {
-            List<ProductImageEntity> productImageEntities = new ArrayList<>();
-            for (MultipartFile image : productRequest.getImages()) {
-                ProductImageEntity productImageEntity = new ProductImageEntity();
-                productImageEntity.setProductsEntity(productsEntity);
-                try {
-                    productImageEntity.setImage(image.getBytes());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                productImageEntities.add(productImageEntity);
-            }
-            productsEntity.setProductImageEntities(productImageEntities);
-        }
+        addUploadedImages(productsEntity, productRequest.getImages());
         productRepository.save(productsEntity);
         messageDTO.setStatus(HttpStatus.OK);
         messageDTO.setMessage("Success");
@@ -340,22 +330,26 @@ public class ProductServiceImpl implements ProductService {
         MessageDTO messageDTO = new MessageDTO();
         try {
             ProductsEntity productsEntity = productRepository.findById(productRequest.getIdProduct()).get();
-            modelMapper.map(productRequest, productsEntity);
+            productsEntity.setNameProduct(productRequest.getNameProduct());
+            productsEntity.setDescription(productRequest.getDescription());
             CategoryEntity categoryEntity = categoryRepository.findById(productRequest.getIdCategory()).get();
             productsEntity.setCategoryEntity(categoryEntity);
-            if (productRequest.getImages() != null) {
-                List<ProductImageEntity> productImageEntities = new ArrayList<>();
-                for (MultipartFile image : productRequest.getImages()) {
-                    ProductImageEntity productImageEntity = new ProductImageEntity();
-                    productImageEntity.setProductsEntity(productsEntity);
-                    try {
-                        productImageEntity.setImage(image.getBytes());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    productImageEntities.add(productImageEntity);
-                }
-                productsEntity.setProductImageEntities(productImageEntities);
+
+            boolean hasUploadedImages = productRequest.getImages() != null
+                    && productRequest.getImages().stream().anyMatch(image -> image != null && !image.isEmpty());
+            if (Boolean.TRUE.equals(productRequest.getImageSelectionProvided())) {
+                Set<Long> retainedImageIds = new HashSet<>(
+                        productRequest.getRetainedImageIds() != null
+                                ? productRequest.getRetainedImageIds()
+                                : List.of()
+                );
+                productsEntity.getProductImageEntities().removeIf(
+                        image -> image.getIdImage() == null || !retainedImageIds.contains(image.getIdImage())
+                );
+                addUploadedImages(productsEntity, productRequest.getImages());
+            } else if (hasUploadedImages) {
+                productsEntity.getProductImageEntities().clear();
+                addUploadedImages(productsEntity, productRequest.getImages());
             }
             productsEntity.setUpdatedAt(LocalDateTime.now());
             productRepository.save(productsEntity);
@@ -366,6 +360,25 @@ public class ProductServiceImpl implements ProductService {
             messageDTO.setStatus(HttpStatus.NOT_FOUND);
             messageDTO.setMessage("Product not found");
             return messageDTO;
+        }
+    }
+
+    private void addUploadedImages(ProductsEntity product, List<MultipartFile> images) {
+        if (images == null) {
+            return;
+        }
+        for (MultipartFile image : images) {
+            if (image == null || image.isEmpty()) {
+                continue;
+            }
+            ProductImageEntity productImageEntity = new ProductImageEntity();
+            productImageEntity.setProductsEntity(product);
+            try {
+                productImageEntity.setImage(image.getBytes());
+            } catch (IOException exception) {
+                throw new RuntimeException(exception);
+            }
+            product.getProductImageEntities().add(productImageEntity);
         }
     }
 

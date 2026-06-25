@@ -86,13 +86,106 @@ function productForm(product, categories) {
         <label class="form-field"><span>Danh mục</span><select name="idCategory" required><option value="">Chọn danh mục</option>
             ${categories.map((category) => `<option value="${category.idCategory}" ${Number(product?.idCategory) === Number(category.idCategory) ? 'selected' : ''}>
                 ${escapeHtml(category.nameCategory)}</option>`).join('')}</select></label>
-        <label class="form-field"><span>Hình ảnh</span><input name="images" type="file" accept="image/png,image/jpeg,image/webp" multiple>
-            <small class="field-help">${product ? 'Để trống để giữ hình ảnh hiện tại.' : 'Có thể chọn nhiều ảnh.'}</small></label>
+        <div class="form-field form-span-2"><span>Hình ảnh sản phẩm</span>
+            <label class="product-image-upload">
+                <input data-product-image-input name="images" type="file"
+                    accept="image/png,image/jpeg,image/webp" multiple>
+                <span class="product-image-upload-icon" data-icon="plus"></span>
+                <strong>Chọn nhiều ảnh</strong>
+                <small>PNG, JPG hoặc WebP · Có thể chọn bổ sung nhiều lần</small>
+            </label>
+            <div class="product-image-preview" data-product-image-preview></div>
+            <small class="field-help">Nhấn dấu × trên từng ảnh để loại bỏ trước khi lưu.</small>
+        </div>
         <label class="form-field form-span-2"><span>Mô tả</span><textarea name="description" required
             placeholder="Mô tả công dụng, đối tượng phù hợp...">${escapeHtml(product?.description || '')}</textarea></label>
         <div class="form-actions form-span-2"><button class="button button-ghost" type="button" data-modal-cancel>Hủy</button>
             <button class="button button-primary" type="submit">${product ? 'Lưu thay đổi' : 'Tạo sản phẩm'}</button></div>
         </form>`;
+}
+
+function readImageFile(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+function bindProductImagePicker(form, product) {
+    const input = qs('[data-product-image-input]', form);
+    const preview = qs('[data-product-image-preview]', form);
+    let sequence = 0;
+    let retainedImages = (product?.imageDTOS || []).map((image) => ({
+        key: `existing-${image.idImage}`,
+        idImage: Number(image.idImage),
+        src: imageSrc(image.imageBase64),
+        type: 'existing'
+    }));
+    let selectedImages = [];
+
+    const render = () => {
+        const images = [...retainedImages, ...selectedImages];
+        preview.innerHTML = images.map((image, index) => `<article class="product-image-preview-item">
+            <img src="${image.src}" alt="Ảnh sản phẩm ${index + 1}">
+            <span class="product-image-kind">${image.type === 'existing' ? 'Hiện có' : 'Mới'}</span>
+            <button type="button" data-remove-product-image="${image.key}"
+                aria-label="Loại bỏ ảnh ${index + 1}" title="Loại bỏ ảnh">×</button>
+        </article>`).join('') || `<div class="product-image-preview-empty">
+            <span data-icon="image"></span><span>Chưa có ảnh nào được chọn</span>
+        </div>`;
+
+        qsa('[data-remove-product-image]', preview).forEach((button) => {
+            button.addEventListener('click', () => {
+                retainedImages = retainedImages.filter((image) => image.key !== button.dataset.removeProductImage);
+                selectedImages = selectedImages.filter((image) => image.key !== button.dataset.removeProductImage);
+                render();
+            });
+        });
+        renderIcons(preview);
+    };
+
+    input.addEventListener('change', async () => {
+        try {
+            const files = [...input.files].filter((file) => file.type.startsWith('image/'));
+            const knownFiles = new Set(selectedImages.map((image) =>
+                `${image.file.name}-${image.file.size}-${image.file.lastModified}`));
+            const additions = [];
+            for (const file of files) {
+                const signature = `${file.name}-${file.size}-${file.lastModified}`;
+                if (knownFiles.has(signature)) continue;
+                knownFiles.add(signature);
+                additions.push({
+                    key: `new-${Date.now()}-${sequence++}`,
+                    file,
+                    src: await readImageFile(file),
+                    type: 'new'
+                });
+            }
+            selectedImages.push(...additions);
+            render();
+        } catch {
+            toast('Không thể đọc một trong các ảnh đã chọn.', 'error');
+        } finally {
+            input.value = '';
+        }
+    });
+
+    render();
+
+    return {
+        formData() {
+            const data = new FormData(form);
+            data.delete('images');
+            selectedImages.forEach((image) => data.append('images', image.file));
+            if (product) {
+                data.append('imageSelectionProvided', 'true');
+                retainedImages.forEach((image) => data.append('retainedImageIds', image.idImage));
+            }
+            return data;
+        }
+    };
 }
 
 function openProductForm(product, categories, onSaved) {
@@ -102,15 +195,14 @@ function openProductForm(product, categories, onSaved) {
         content: productForm(product, categories),
         size: 'wide'
     });
-    qs('[data-modal-cancel]').addEventListener('click', closeModal);
     const form = qs('[data-modal-form]');
+    const imagePicker = bindProductImagePicker(form, product);
+    qs('[data-modal-cancel]').addEventListener('click', closeModal);
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
         if (!form.reportValidity()) return;
         const button = qs('button[type="submit"]', form);
-        const data = new FormData(form);
-        const files = data.getAll('images');
-        if (!files.some((file) => file instanceof File && file.size > 0)) data.delete('images');
+        const data = imagePicker.formData();
         setButtonLoading(button, true, 'Đang lưu...');
         try {
             if (product) await api.updateProduct(data);

@@ -84,6 +84,7 @@
     .auth-card { padding: 34px 21px; }
     .form-grid { grid-template-columns: 1fr; }
     .form-span-2 { grid-column: auto; }
+    .product-image-preview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .cart-item { grid-template-columns: 22px 58px 1fr auto; padding: 15px; gap: 10px; }
     .cart-item-image { width: 58px; height: 56px; }
     .cart-item-price { grid-column: 3 / 5; padding-left: 68px; }
