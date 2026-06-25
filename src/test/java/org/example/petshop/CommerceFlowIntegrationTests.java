@@ -6,20 +6,24 @@ import org.example.petshop.DTO.MessageDTO;
 import org.example.petshop.DTO.OrderItemRequest;
 import org.example.petshop.DTO.OrderDTO;
 import org.example.petshop.DTO.OrderRequest;
+import org.example.petshop.DTO.ProductRequest;
 import org.example.petshop.DTO.RegisterDTO;
 import org.example.petshop.DTO.VoucherDTO;
 import org.example.petshop.Entity.PaymentMethodEntity;
+import org.example.petshop.Entity.CategoryEntity;
 import org.example.petshop.Entity.ProductsEntity;
 import org.example.petshop.Entity.SizeProductEntity;
 import org.example.petshop.Entity.UserEntity;
 import org.example.petshop.Entity.VoucherEntity;
 import org.example.petshop.Repository.CartRepository;
+import org.example.petshop.Repository.CategoryRepository;
 import org.example.petshop.Repository.PaymentMethodRepository;
 import org.example.petshop.Repository.ProductRepository;
 import org.example.petshop.Repository.UserRepository;
 import org.example.petshop.Repository.VoucherRepository;
 import org.example.petshop.Repository.WishListRepository;
 import org.example.petshop.Service.OrderService;
+import org.example.petshop.Service.ProductService;
 import org.example.petshop.Service.UserService;
 import org.example.petshop.Service.VoucherService;
 import org.example.petshop.Service.WishListService;
@@ -28,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.mock.web.MockMultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -62,6 +67,10 @@ class CommerceFlowIntegrationTests {
     VoucherRepository voucherRepository;
     @Autowired
     VoucherService voucherService;
+    @Autowired
+    ProductService productService;
+    @Autowired
+    CategoryRepository categoryRepository;
 
     @Test
     void registrationCreatesCartAndWishlistIsIdempotent() {
@@ -162,6 +171,67 @@ class CommerceFlowIntegrationTests {
         assertTrue(voucherIds.contains(available.getIdVoucher()));
         assertTrue(!voucherIds.contains(expired.getIdVoucher()));
         assertTrue(!voucherIds.contains(outOfStock.getIdVoucher()));
+    }
+
+    @Test
+    void productUpdateCanRetainRemoveAndAppendImages() {
+        CategoryEntity category = categoryRepository.findAll().stream().findFirst().orElse(null);
+        assumeTrue(category != null, "Database needs at least one category");
+
+        String productName = "Image test " + UUID.randomUUID();
+        ProductRequest createRequest = new ProductRequest();
+        createRequest.setNameProduct(productName);
+        createRequest.setDescription("Image selection integration test");
+        createRequest.setIdCategory(category.getIdCategory());
+        createRequest.setImages(List.of(
+                imageFile("first.png", 1),
+                imageFile("second.png", 2)
+        ));
+
+        assertEquals(HttpStatus.OK, productService.addProduct(createRequest).getStatus());
+        ProductsEntity product = productRepository.findAll().stream()
+                .filter(item -> productName.equals(item.getNameProduct()))
+                .findFirst()
+                .orElseThrow();
+        assertEquals(2, product.getProductImageEntities().size());
+
+        Long retainedImageId = product.getProductImageEntities().get(0).getIdImage();
+        Long removedImageId = product.getProductImageEntities().get(1).getIdImage();
+        ProductRequest updateRequest = new ProductRequest();
+        updateRequest.setIdProduct(product.getIdProduct());
+        updateRequest.setNameProduct(product.getNameProduct());
+        updateRequest.setDescription(product.getDescription());
+        updateRequest.setIdCategory(category.getIdCategory());
+        updateRequest.setRetainedImageIds(List.of(retainedImageId));
+        updateRequest.setImageSelectionProvided(true);
+        updateRequest.setImages(List.of(imageFile("third.png", 3)));
+
+        assertEquals(HttpStatus.OK, productService.updateProduct(updateRequest).getStatus());
+        productRepository.flush();
+
+        ProductsEntity updated = productRepository.findById(product.getIdProduct()).orElseThrow();
+        List<Long> updatedImageIds = updated.getProductImageEntities().stream()
+                .map(image -> image.getIdImage())
+                .toList();
+        assertEquals(2, updatedImageIds.size());
+        assertTrue(updatedImageIds.contains(retainedImageId));
+        assertTrue(!updatedImageIds.contains(removedImageId));
+
+        updateRequest.setRetainedImageIds(List.of());
+        updateRequest.setImages(null);
+        assertEquals(HttpStatus.OK, productService.updateProduct(updateRequest).getStatus());
+        productRepository.flush();
+        assertTrue(productRepository.findById(product.getIdProduct()).orElseThrow()
+                .getProductImageEntities().isEmpty());
+    }
+
+    private MockMultipartFile imageFile(String filename, int marker) {
+        return new MockMultipartFile(
+                "images",
+                filename,
+                "image/png",
+                new byte[]{(byte) marker, 2, 3, 4}
+        );
     }
 
     private VoucherEntity createVoucher(String prefix, LocalDate expiredDate, Long quantity) {

@@ -18,4 +18,6 @@ public class ProductRequest {
     private String description;
     private Long idCategory;
     private List<MultipartFile> images;
+    private List<Long> retainedImageIds;
+    private Boolean imageSelectionProvided;
 }
