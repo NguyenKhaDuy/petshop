@@ -87,7 +87,10 @@ public class ProductServiceImpl implements ProductService {
             for (ReviewEntity reviewEntity : productsEntity.getReviewEntities()){
                 ReviewProductDTO reviewProductDTO = new ReviewProductDTO();
                 reviewProductDTO.setIdReview(reviewEntity.getIdReview());
+                reviewProductDTO.setIdUser(reviewEntity.getUserEntity().getIdUser());
                 reviewProductDTO.setNameUser(reviewEntity.getUserEntity().getName());
+                reviewProductDTO.setIdProduct(productsEntity.getIdProduct());
+                reviewProductDTO.setNameProduct(productsEntity.getNameProduct());
                 reviewProductDTO.setStar(reviewEntity.getStar());
                 reviewProductDTO.setCreatedAt(reviewEntity.getCreatedAt());
                 reviewProductDTO.setComment(reviewEntity.getComment());
@@ -147,7 +150,10 @@ public class ProductServiceImpl implements ProductService {
             for (ReviewEntity reviewEntity : productsEntity.getReviewEntities()){
                 ReviewProductDTO reviewProductDTO = new ReviewProductDTO();
                 reviewProductDTO.setIdReview(reviewEntity.getIdReview());
+                reviewProductDTO.setIdUser(reviewEntity.getUserEntity().getIdUser());
                 reviewProductDTO.setNameUser(reviewEntity.getUserEntity().getName());
+                reviewProductDTO.setIdProduct(productsEntity.getIdProduct());
+                reviewProductDTO.setNameProduct(productsEntity.getNameProduct());
                 reviewProductDTO.setStar(reviewEntity.getStar());
                 reviewProductDTO.setCreatedAt(reviewEntity.getCreatedAt());
                 reviewProductDTO.setComment(reviewEntity.getComment());
@@ -210,7 +216,10 @@ public class ProductServiceImpl implements ProductService {
             for (ReviewEntity reviewEntity : productsEntity.getReviewEntities()){
                 ReviewProductDTO reviewProductDTO = new ReviewProductDTO();
                 reviewProductDTO.setIdReview(reviewEntity.getIdReview());
+                reviewProductDTO.setIdUser(reviewEntity.getUserEntity().getIdUser());
                 reviewProductDTO.setNameUser(reviewEntity.getUserEntity().getName());
+                reviewProductDTO.setIdProduct(productsEntity.getIdProduct());
+                reviewProductDTO.setNameProduct(productsEntity.getNameProduct());
                 reviewProductDTO.setStar(reviewEntity.getStar());
                 reviewProductDTO.setCreatedAt(reviewEntity.getCreatedAt());
                 reviewProductDTO.setComment(reviewEntity.getComment());
@@ -279,7 +288,10 @@ public class ProductServiceImpl implements ProductService {
                 for (ReviewEntity reviewEntity : productsEntity.getReviewEntities()){
                     ReviewProductDTO reviewProductDTO = new ReviewProductDTO();
                     reviewProductDTO.setIdReview(reviewEntity.getIdReview());
+                    reviewProductDTO.setIdUser(reviewEntity.getUserEntity().getIdUser());
                     reviewProductDTO.setNameUser(reviewEntity.getUserEntity().getName());
+                    reviewProductDTO.setIdProduct(productsEntity.getIdProduct());
+                    reviewProductDTO.setNameProduct(productsEntity.getNameProduct());
                     reviewProductDTO.setStar(reviewEntity.getStar());
                     reviewProductDTO.setCreatedAt(reviewEntity.getCreatedAt());
                     reviewProductDTO.setComment(reviewEntity.getComment());

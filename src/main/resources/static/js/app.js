@@ -5,7 +5,8 @@ import { renderLogin, renderRegister } from './modules/auth.js';
 import { renderCart, renderWishlist, renderCustomerOrders, renderProfile } from './modules/customer.js';
 import {
     renderAdminDashboard, renderAdminProducts, renderAdminCategories, renderAdminSizes,
-    renderAdminVouchers, renderAdminImports, renderAdminOrders, renderAdminUsers
+    renderAdminVouchers, renderAdminImports, renderAdminOrders, renderAdminUsers,
+    renderAdminReviews
 } from './modules/admin.js';
 
 const routes = {
@@ -25,7 +26,8 @@ const routes = {
     'admin/vouchers': { view: 'admin-vouchers', render: renderAdminVouchers, admin: true },
     'admin/imports': { view: 'admin-imports', render: renderAdminImports, admin: true },
     'admin/orders': { view: 'admin-orders', render: renderAdminOrders, admin: true },
-    'admin/users': { view: 'admin-users', render: renderAdminUsers, admin: true }
+    'admin/users': { view: 'admin-users', render: renderAdminUsers, admin: true },
+    'admin/reviews': { view: 'admin-reviews', render: renderAdminReviews, admin: true }
 };
 
 const publicNav = [
@@ -50,6 +52,7 @@ const adminNav = [
     ['Kích cỡ', '#/admin/sizes', 'ruler'],
     ['Khuyến mãi', '#/admin/vouchers', 'ticket'],
     ['Khách hàng', '#/admin/users', 'users'],
+    ['Đánh giá', '#/admin/reviews', 'star'],
     ['Cửa hàng', null, null],
     ['Xem trang bán hàng', '#/home', 'store']
 ];
