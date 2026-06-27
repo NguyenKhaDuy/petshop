@@ -95,6 +95,11 @@ export function formatDate(value, includeTime = false) {
         : { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
 }
 
+export function ratingStars(value) {
+    const rating = Math.max(0, Math.min(5, Number(value || 0)));
+    return `${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}`;
+}
+
 export function toDateInput(value) {
     if (!value) return '';
     return String(value).slice(0, 10);

@@ -159,6 +159,18 @@
 .review-card p { min-height: 45px; margin-bottom: 14px; font-size: 12px; }
 .review-author { display: flex; align-items: center; gap: 9px; }
 .review-author span { color: var(--ink-faint); font-size: 9px; }
+.review-card-actions { display: flex; margin-top: 14px; justify-content: flex-end; }
+.review-form-list { display: flex; flex-direction: column; gap: 14px; }
+.review-form-item { padding: 16px; border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(180deg, #fff, var(--surface-muted)); }
+.review-form-item.is-disabled { opacity: .72; }
+.review-form-product { display: flex; margin-bottom: 14px; align-items: center; gap: 12px; }
+.review-form-product img { width: 66px; height: 66px; border-radius: 16px; background: var(--surface); object-fit: cover; box-shadow: var(--shadow-sm); }
+.review-form-product strong { display: block; margin-bottom: 4px; }
+.review-form-product span, .review-existing small { color: var(--ink-faint); font-size: 11px; }
+.review-selection { margin: 0 0 12px; padding: 10px 12px; border: 1px solid var(--line-soft); border-radius: 12px; background: rgba(22, 191, 192, .08); font-weight: 800; }
+.review-existing { display: grid; padding: 14px; border: 1px solid var(--line-soft); border-radius: 14px; background: var(--surface); gap: 8px; }
+.review-existing p { margin: 0; color: var(--ink-muted); font-size: 13px; }
+.review-existing .button { justify-self: start; margin-top: 3px; }
 
 .auth-shell {
     display: grid;

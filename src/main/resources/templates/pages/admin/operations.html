@@ -48,6 +48,19 @@
             <div class="pagination" data-role="user-pagination"></div>
         </section>
     </template>
+    <template id="view-admin-reviews">
+        <section class="page-heading"><div><span class="eyebrow">Chất lượng dịch vụ</span><h1>Đánh giá sản phẩm</h1>
+            <p>Admin chỉ xem phản hồi của khách hàng, không chỉnh sửa hoặc xóa đánh giá.</p></div></section>
+        <section class="panel data-panel">
+            <div class="table-toolbar"><label class="search-field"><span data-icon="search"></span>
+                <input data-role="review-search" type="search" placeholder="Tìm theo sản phẩm, khách hàng hoặc nội dung..."></label>
+                <div class="toolbar-meta" data-role="review-meta"></div></div>
+            <div class="table-wrap"><table class="data-table"><thead><tr><th>Đánh giá</th><th>Sản phẩm</th>
+                <th>Khách hàng</th><th>Số sao</th><th>Ngày gửi</th><th class="align-right">Thao tác</th></tr></thead>
+                <tbody data-role="review-table"></tbody></table></div>
+            <div class="pagination" data-role="review-pagination"></div>
+        </section>
+    </template>
 </th:block>
 </body>
 </html>

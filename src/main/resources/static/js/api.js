@@ -81,6 +81,13 @@ export const api = {
     addWishlist(data) { return request('/api/wishlist', { method: 'POST', body: data }); },
     deleteWishlist(id) { return request(`/api/wishlist/id-wishlist=${id}`, { method: 'DELETE' }); },
 
+    adminReviews(current) { return page('/api/admin/reviews', current); },
+    userReviews(userId) { return request(`/api/user/review/id-user=${userId}`); },
+    addReview(data) { return request('/api/user/review', { method: 'POST', body: data }); },
+    deleteReview(idReview, idUser) {
+        return request(`/api/user/review/id-review=${idReview}?idUser=${encodeURIComponent(idUser)}`, { method: 'DELETE' });
+    },
+
     orders(current) { return page('/api/admin/orders', current); },
     userOrders(userId) { return request(`/api/order/user/id-user=${userId}`); },
     order(id) { return request(`/api/order/id-order=${id}`); },

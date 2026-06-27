@@ -1,7 +1,8 @@
 import { api } from '../api.js';
 import {
     qs, qsa, renderIcons, formatCurrency, formatDate, imageSrc, escapeHtml, badge, emptyState,
-    toast, humanizeError, confirmAction, openModal, closeModal, formDataObject, setButtonLoading, initials
+    toast, humanizeError, confirmAction, openModal, closeModal, formDataObject, setButtonLoading, initials,
+    ratingStars
 } from '../utils.js';
 import {
     state, loadProducts, loadCustomerCollections, loadCurrentUser
@@ -266,6 +267,166 @@ export async function renderWishlist({ root, refreshShell }) {
     draw();
 }
 
+function canReviewOrder(order) {
+    if (String(state.user?.role || state.session?.role || '').toUpperCase() === 'ADMIN') return false;
+    return ['COMPLETED', 'DELIVERED'].includes(String(order.status || '').toUpperCase());
+}
+
+function uniqueOrderProducts(order) {
+    const productMap = new Map();
+    (order.orderDetailDTOS || []).forEach((item) => {
+        if (!item.idProduct) return;
+        const key = String(item.idProduct);
+        if (!productMap.has(key)) {
+            productMap.set(key, {
+                ...item,
+                quantity: Number(item.quantity || 0),
+                sizes: new Set(item.size ? [item.size] : [])
+            });
+            return;
+        }
+        const existing = productMap.get(key);
+        existing.quantity += Number(item.quantity || 0);
+        if (item.size) existing.sizes.add(item.size);
+    });
+    return [...productMap.values()].map((item) => ({
+        ...item,
+        sizeText: [...item.sizes].join(', ') || item.size || '—'
+    }));
+}
+
+function openReview(order, getReviews, onChanged) {
+    const products = uniqueOrderProducts(order);
+    const existingByProduct = new Map((getReviews() || [])
+        .filter((review) => review.idProduct)
+        .map((review) => [String(review.idProduct), review]));
+    const pendingProducts = products.filter((item) => !existingByProduct.has(String(item.idProduct)));
+    openModal({
+        title: `Đánh giá đơn #${order.idOrder}`,
+        eyebrow: 'Trải nghiệm sản phẩm',
+        size: 'wide',
+        content: `<form data-review-form class="review-form-list">
+            ${products.map((item) => {
+                const review = existingByProduct.get(String(item.idProduct));
+                const pendingIndex = pendingProducts.findIndex((pending) =>
+                    String(pending.idProduct) === String(item.idProduct));
+                const selectedByDefault = pendingIndex === 0;
+                return `<article class="review-form-item" data-review-product-id="${item.idProduct}">
+                    <div class="review-form-product"><img src="${imageSrc(item.imageProduct)}" alt="">
+                        <div><strong>${escapeHtml(item.nameProduct || 'Sản phẩm')}</strong>
+                            <span>Kích cỡ ${escapeHtml(item.sizeText)} · SL ${item.quantity}</span></div></div>
+                    ${review ? `<div class="review-existing">
+                        <span class="review-stars">${ratingStars(review.star)}</span>
+                        <p>${escapeHtml(review.comment || 'Bạn chưa để lại nhận xét.')}</p>
+                        <small>${formatDate(review.createdAt, true)}</small>
+                        <button class="button button-danger button-small" type="button"
+                            data-delete-review="${review.idReview}">Xóa đánh giá của tôi</button>
+                    </div>` : `<label class="checkbox-field review-selection">
+                        <input type="checkbox" data-review-select="${item.idProduct}" ${selectedByDefault ? 'checked' : ''}>
+                        <span>Đánh giá sản phẩm này</span>
+                    </label>
+                    <div class="form-grid" data-review-fields="${item.idProduct}">
+                        <label class="form-field"><span>Số sao</span><select name="star-${item.idProduct}"
+                            data-review-input="${item.idProduct}" ${selectedByDefault ? 'required' : 'disabled'}>
+                            <option value="">Chọn mức đánh giá</option>
+                            <option value="5">5 sao - Rất hài lòng</option>
+                            <option value="4">4 sao - Hài lòng</option>
+                            <option value="3">3 sao - Bình thường</option>
+                            <option value="2">2 sao - Chưa tốt</option>
+                            <option value="1">1 sao - Không hài lòng</option>
+                        </select></label>
+                        <label class="form-field"><span>Nhận xét</span><textarea name="comment-${item.idProduct}"
+                            data-review-input="${item.idProduct}" ${selectedByDefault ? 'required' : 'disabled'}
+                            minlength="3" placeholder="Chia sẻ cảm nhận thật của bạn về sản phẩm này..."></textarea></label>
+                    </div>`}
+                </article>`;
+            }).join('') || emptyState('Không có sản phẩm', 'Đơn hàng này chưa có dữ liệu sản phẩm để đánh giá.', 'star')}
+            <div class="form-actions">
+                <button class="button button-ghost" type="button" data-modal-cancel>Đóng</button>
+                <button class="button button-primary" type="submit" ${pendingProducts.length ? '' : 'disabled'}>
+                    ${pendingProducts.length ? 'Gửi 1 đánh giá' : 'Không còn sản phẩm cần đánh giá'}</button>
+            </div>
+        </form>`
+    });
+
+    const modalBody = qs('#modal-body');
+    qs('[data-modal-cancel]', modalBody)?.addEventListener('click', closeModal);
+    qsa('[data-delete-review]', modalBody).forEach((button) => button.addEventListener('click', async () => {
+        const confirmed = await confirmAction({
+            title: 'Xóa đánh giá?',
+            message: 'Đánh giá này sẽ bị xóa khỏi sản phẩm. Bạn có thể đánh giá lại sau.',
+            confirmLabel: 'Xóa đánh giá'
+        });
+        if (!confirmed) {
+            openReview(order, getReviews, onChanged);
+            return;
+        }
+        try {
+            await api.deleteReview(button.dataset.deleteReview, state.session.idUser);
+            toast('Đã xóa đánh giá của bạn.');
+            await onChanged();
+            openReview(order, getReviews, onChanged);
+        } catch (error) {
+            toast(humanizeError(error), 'error');
+        }
+    }));
+
+    const form = qs('[data-review-form]', modalBody);
+    const selectedPendingProducts = () => pendingProducts.filter((item) =>
+        qs(`[data-review-select="${item.idProduct}"]`, form)?.checked);
+    const updateReviewSelection = () => {
+        qsa('[data-review-select]', form).forEach((checkbox) => {
+            const productId = checkbox.dataset.reviewSelect;
+            const selected = checkbox.checked;
+            qs(`[data-review-product-id="${productId}"]`, form)?.classList.toggle('is-disabled', !selected);
+            qsa(`[data-review-input="${productId}"]`, form).forEach((input) => {
+                input.disabled = !selected;
+                input.required = selected;
+                if (!selected) {
+                    input.value = '';
+                    input.setCustomValidity('');
+                }
+            });
+        });
+        const selectedCount = selectedPendingProducts().length;
+        const submitButton = qs('button[type="submit"]', form);
+        submitButton.disabled = selectedCount === 0;
+        submitButton.textContent = selectedCount
+            ? `Gửi ${selectedCount} đánh giá`
+            : 'Chọn sản phẩm để đánh giá';
+    };
+    qsa('[data-review-select]', form).forEach((checkbox) =>
+        checkbox.addEventListener('change', updateReviewSelection));
+    updateReviewSelection();
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const selectedProducts = selectedPendingProducts();
+        if (!selectedProducts.length) {
+            toast('Hãy chọn ít nhất một sản phẩm bạn muốn đánh giá.', 'warning');
+            return;
+        }
+        if (!form.reportValidity()) return;
+        const button = qs('button[type="submit"]', form);
+        const reviewItemRequests = selectedProducts.map((item) => ({
+            userId: state.session.idUser,
+            productId: Number(item.idProduct),
+            star: Number(qs(`[name="star-${item.idProduct}"]`, form).value),
+            comment: qs(`[name="comment-${item.idProduct}"]`, form).value.trim()
+        }));
+        setButtonLoading(button, true, 'Đang gửi đánh giá...');
+        try {
+            await api.addReview({ reviewItemRequests });
+            closeModal();
+            toast('Cảm ơn bạn, đánh giá đã được ghi nhận.');
+            await onChanged();
+        } catch (error) {
+            toast(humanizeError(error), 'error');
+            setButtonLoading(button, false);
+        }
+    });
+}
+
 function orderDetailContent(order) {
     const info = order.informationOrderDTO || {};
     return `<div class="detail-list">
@@ -301,6 +462,23 @@ export async function renderCustomerOrders({ root }) {
     const response = await api.userOrders(state.session.idUser);
     const orders = response.data || [];
     const list = qs('[data-role="customer-order-list"]', root);
+    let userReviews = [];
+    const refreshReviews = async () => {
+        const reviewResponse = await api.userReviews(state.session.idUser);
+        userReviews = reviewResponse.data || [];
+    };
+    await refreshReviews();
+    const reviewAction = (order) => {
+        if (!canReviewOrder(order)) return '';
+        const products = uniqueOrderProducts(order);
+        if (!products.length) return '';
+        const reviewedCount = products.filter((item) =>
+            userReviews.some((review) => Number(review.idProduct) === Number(item.idProduct))).length;
+        const label = reviewedCount >= products.length && products.length
+            ? 'Xem/Xóa đánh giá'
+            : `Đánh giá ${Math.max(products.length - reviewedCount, 0)} sản phẩm`;
+        return `<button class="button button-primary button-small" data-review-order="${order.idOrder}">${label}</button>`;
+    };
     let filter = '';
     const draw = () => {
         const filtered = orders.filter((order) => !filter || order.status === filter);
@@ -312,11 +490,21 @@ export async function renderCustomerOrders({ root }) {
                 <span class="table-secondary" style="margin-left:16px">${order.orderDetailDTOS?.length || 0} sản phẩm</span></div>
                 <div class="order-total"><span>Tổng thanh toán</span><strong>${formatCurrency(order.totalAmount)}</strong></div></div>
             <div class="order-card-actions"><button class="button button-ghost button-small" data-view-order="${order.idOrder}">Xem chi tiết</button>
+                ${reviewAction(order)}
                 ${String(order.status).toUpperCase() === 'WAITING CONFIRMATION'
                     ? `<button class="button button-ghost button-small" data-cancel-order="${order.idOrder}">Hủy đơn</button>` : ''}</div>
             </article>`).join('') || emptyState('Không có đơn hàng', filter
                 ? 'Không có đơn hàng ở trạng thái này.' : 'Các đơn hàng của bạn sẽ xuất hiện tại đây.', 'clipboard-list');
         qsa('[data-view-order]', list).forEach((button) => button.addEventListener('click', () => showOrder(button.dataset.viewOrder)));
+        qsa('[data-review-order]', list).forEach((button) => button.addEventListener('click', () => {
+            const order = orders.find((entry) => String(entry.idOrder) === button.dataset.reviewOrder);
+            if (order) {
+                openReview(order, () => userReviews, async () => {
+                    await refreshReviews();
+                    draw();
+                });
+            }
+        }));
         qsa('[data-cancel-order]', list).forEach((button) => button.addEventListener('click', async () => {
             const confirmed = await confirmAction({
                 title: 'Hủy đơn hàng?',

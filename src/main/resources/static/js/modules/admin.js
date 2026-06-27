@@ -2,7 +2,7 @@ import { api } from '../api.js';
 import {
     qs, qsa, renderIcons, formatCurrency, formatDate, toDateInput, toDateTimeInput, imageSrc,
     escapeHtml, badge, emptyState, debounce, toast, humanizeError, confirmAction, openModal,
-    closeModal, formDataObject, setButtonLoading, pagination, initials
+    closeModal, formDataObject, setButtonLoading, pagination, initials, ratingStars
 } from '../utils.js';
 import {
     state, loadProducts, loadCategories, loadCurrentUser
@@ -784,6 +784,59 @@ export async function renderAdminUsers({ root }) {
     const loadPage = async (next = 1) => {
         page = next; response = await api.users(page); rows = response.data || []; draw();
         bindPagination(qs('[data-role="user-pagination"]', root), response, loadPage);
+    };
+    search.addEventListener('input', debounce(draw, 160));
+    await loadPage();
+}
+
+function reviewDetail(review) {
+    return `<div class="detail-list">
+        <div class="detail-item"><span>Mã đánh giá</span><strong>#${review.idReview}</strong></div>
+        <div class="detail-item"><span>Số sao</span><strong class="review-stars">${ratingStars(review.star)}</strong></div>
+        <div class="detail-item"><span>Khách hàng</span><strong>${escapeHtml(review.nameUser || '—')}</strong></div>
+        <div class="detail-item"><span>Ngày gửi</span><strong>${formatDate(review.createdAt, true)}</strong></div>
+        </div>
+        <div class="modal-section"><h3>Sản phẩm được đánh giá</h3>
+            <div class="detail-list">
+                <div class="detail-item"><span>Tên sản phẩm</span><strong>${escapeHtml(review.nameProduct || 'Sản phẩm')}</strong></div>
+                <div class="detail-item"><span>Mã sản phẩm</span><strong>#${review.idProduct || '—'}</strong></div>
+            </div></div>
+        <div class="modal-section"><h3>Nội dung phản hồi</h3>
+            <p>${escapeHtml(review.comment || 'Khách hàng chưa để lại nhận xét.')}</p></div>
+        <p class="table-secondary">Admin chỉ xem đánh giá để theo dõi chất lượng sản phẩm/dịch vụ.</p>`;
+}
+
+export async function renderAdminReviews({ root }) {
+    const table = qs('[data-role="review-table"]', root);
+    const search = qs('[data-role="review-search"]', root);
+    let response;
+    let rows = [];
+    let page = 1;
+    const draw = () => {
+        const term = search.value.trim().toLowerCase();
+        const filtered = rows.filter((item) => !term || [
+            item.nameProduct, item.nameUser, item.comment, `#${item.idReview}`
+        ].join(' ').toLowerCase().includes(term));
+        qs('[data-role="review-meta"]', root).textContent = `${filtered.length} đánh giá · Trang ${response.currentPage}/${Math.max(response.totalPages, 1)}`;
+        table.innerHTML = filtered.map((review) => `<tr><td><strong class="table-primary">#${review.idReview}</strong>
+            <span class="table-secondary">${escapeHtml(review.comment || 'Chưa có nhận xét')}</span></td>
+            <td><strong class="table-primary">${escapeHtml(review.nameProduct || 'Sản phẩm')}</strong>
+                <span class="table-secondary">#${review.idProduct || '—'}</span></td>
+            <td><strong class="table-primary">${escapeHtml(review.nameUser || 'Khách hàng')}</strong>
+                <span class="table-secondary">User #${review.idUser || '—'}</span></td>
+            <td><span class="review-stars">${ratingStars(review.star)}</span></td>
+            <td>${formatDate(review.createdAt, true)}</td>
+            <td>${actionButtons(review.idReview, ['view'])}</td></tr>`).join('') ||
+            `<tr><td colspan="6">${emptyState('Chưa có đánh giá', 'Các đánh giá của khách hàng sẽ xuất hiện tại đây.', 'star')}</td></tr>`;
+        qsa('[data-row-action="view"]', table).forEach((button) => button.addEventListener('click', () => {
+            const review = rows.find((entry) => String(entry.idReview) === button.dataset.id);
+            if (review) openModal({ title: `Đánh giá #${review.idReview}`, eyebrow: 'Phản hồi khách hàng', content: reviewDetail(review), size: 'wide' });
+        }));
+        renderIcons(table);
+    };
+    const loadPage = async (next = 1) => {
+        page = next; response = await api.adminReviews(page); rows = response.data || []; draw();
+        bindPagination(qs('[data-role="review-pagination"]', root), response, loadPage);
     };
     search.addEventListener('input', debounce(draw, 160));
     await loadPage();

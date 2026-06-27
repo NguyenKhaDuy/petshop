@@ -19,5 +19,9 @@ public class ReviewProductDTO {
     private String comment;
     @DateTimeFormat(pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime createdAt;
+    private Long idUser;
     private String nameUser;
+    private Long idProduct;
+    private String nameProduct;
+    private String imageProduct;
 }

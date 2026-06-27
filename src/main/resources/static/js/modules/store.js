@@ -1,7 +1,7 @@
 import { api } from '../api.js';
 import {
     qs, qsa, renderIcons, formatCurrency, imageSrc, escapeHtml, badge, emptyState,
-    debounce, toast, humanizeError, setButtonLoading
+    debounce, toast, humanizeError, setButtonLoading, confirmAction, ratingStars
 } from '../utils.js';
 import {
     state, loadProducts, loadCategories, loadCustomerCollections, loadCurrentUser
@@ -231,11 +231,33 @@ export async function renderProductDetail({ root, params, refreshShell }) {
     });
     bindWishlist(container, refreshShell, () => renderProductDetail({ root, params, refreshShell }));
     const reviews = qs('[data-role="review-list"]', root);
+    const canDeleteOwnReview = (review) => state.session
+        && String(state.user?.role || state.session?.role || '').toUpperCase() !== 'ADMIN'
+        && Number(review.idUser) === Number(state.session.idUser);
     reviews.innerHTML = (product.reviewProductDTOS || []).map((review) => `<article class="review-card">
-        <div class="review-stars">${'★'.repeat(Math.max(0, Math.min(5, Number(review.star || 0))))}${'☆'.repeat(Math.max(0, 5 - Number(review.star || 0)))}</div>
+        <div class="review-stars">${ratingStars(review.star)}</div>
         <p>${escapeHtml(review.comment || 'Người dùng chưa để lại nhận xét.')}</p>
         <div class="review-author"><span class="avatar">${escapeHtml((review.nameUser || 'K')[0])}</span>
-            <div><strong>${escapeHtml(review.nameUser || 'Khách hàng')}</strong><span>${review.createdAt ? new Date(review.createdAt).toLocaleDateString('vi-VN') : ''}</span></div></div></article>`).join('') ||
+            <div><strong>${escapeHtml(review.nameUser || 'Khách hàng')}</strong><span>${review.createdAt ? new Date(review.createdAt).toLocaleDateString('vi-VN') : ''}</span></div></div>
+        ${canDeleteOwnReview(review)
+            ? `<div class="review-card-actions"><button class="button button-danger button-small" type="button"
+                data-delete-review="${review.idReview}">Xóa đánh giá của tôi</button></div>` : ''}
+        </article>`).join('') ||
         emptyState('Chưa có đánh giá', 'Sản phẩm này chưa nhận được đánh giá từ khách hàng.', 'star');
+    qsa('[data-delete-review]', reviews).forEach((button) => button.addEventListener('click', async () => {
+        const confirmed = await confirmAction({
+            title: 'Xóa đánh giá?',
+            message: 'Đánh giá này sẽ bị xóa khỏi sản phẩm. Bạn có thể đánh giá lại trong đơn hàng đã hoàn tất.',
+            confirmLabel: 'Xóa đánh giá'
+        });
+        if (!confirmed) return;
+        try {
+            await api.deleteReview(button.dataset.deleteReview, state.session.idUser);
+            toast('Đã xóa đánh giá của bạn.');
+            await renderProductDetail({ root, params, refreshShell });
+        } catch (error) {
+            toast(humanizeError(error), 'error');
+        }
+    }));
     renderIcons(root);
 }
